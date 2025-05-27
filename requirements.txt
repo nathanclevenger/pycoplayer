@@ -1,0 +1,10 @@
+# Basic dependencies for training
+numpy
+matplotlib
+ipython
+mss
+pillow
+opencv-python
+# Gymnasium with Box2D environment for CarRacing
+"gymnasium[box2d]"
+torch
