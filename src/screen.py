@@ -67,13 +67,61 @@ class AIScreenshot:
         return self.image_grayscale
         
 class ScreenRecorder:
-    def __init__():
-        pass
+    """Utility to record frames and save them as a video."""
+
+    def __init__(self, video_name: str | None = None, fps: int = 10):
+        self.video_name = video_name
+        self.fps = fps
+        self.frames: list[numpy.ndarray] = []
+
+    def add_frame(self, frame: numpy.ndarray) -> None:
+        """Add a frame to the recording."""
+        self.frames.append(frame)
+
+    def save(self, video_name: str | None = None) -> str:
+        """Save all recorded frames into a video file.
+
+        Parameters
+        ----------
+        video_name: str | None
+            Optional file name to override the default provided at
+            initialization.
+
+        Returns
+        -------
+        str
+            Path to the created video file.
+        """
+
+        name = video_name or self.video_name
+        if name is None:
+            import random
+            import string
+
+            name = "".join(random.choice(string.ascii_letters) for _ in range(18)) + ".webm"
+
+        if not self.frames:
+            raise ValueError("No frames recorded")
+
+        height, width = self.frames[0].shape[:2]
+        fourcc = cv2.VideoWriter_fourcc(*"VP90")
+        writer = cv2.VideoWriter(name, fourcc, self.fps, (width, height))
+
+        for img in self.frames:
+            writer.write(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
+        writer.release()
+        return name
 
 class CharacterRecognition:
     def __init__(self):
         pass
 
     def read_screen(self, image: Image):
-        image = numpy.array(image)
-        
+        """Run OCR on ``image`` and return the extracted text."""
+        try:
+            import pytesseract
+        except Exception as exc:  # pragma: no cover - gracefully handle missing dep
+            raise ImportError("pytesseract is required for OCR") from exc
+
+        return pytesseract.image_to_string(image)
